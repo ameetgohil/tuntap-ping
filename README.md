@@ -1,5 +1,6 @@
-##Tun/Tap Ping example
+## Tun/Tap Ping example
 
+```
 > tuntap-ping
 tun/tap ping example
 > openvpn --mktun --dev tun77 --user waldner
@@ -14,3 +15,4 @@ Fri Mar 26 10:48:12 2010 Persist state set to: ON
 $ ./tunclient
 Read 84 bytes from device tun77
 Read 84 bytes from device tun77
+```
