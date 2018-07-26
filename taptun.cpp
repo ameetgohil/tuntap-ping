@@ -108,6 +108,28 @@ void example_crate_taptun(){
   
 }
 
+short onesSum(unsigned short data, unsigned short result){
+  unsigned int sum;
+  sum = data + result;
+  sum = sum + (sum>>16);
+  printf("%4x %4x %4x %4x %4x, ", data, result, sum, sum>>16, sum+(sum>>16));
+  return sum&0xFFFF;
+}
+
+short checksum(char *buf, int len){
+  unsigned short result = 0;
+  unsigned short data = 0;
+  unsigned short buf1, buf2;
+  for(int i=20;i<len;i=i+2){
+    buf1 = buf[i]&0xFF;
+    buf2 = buf[i+1]&0xFF;
+    data = buf2<<8 | buf1;
+    //printf("%4x %2x %2x,", data, buf[i], buf[i+1]);
+    result = onesSum(data,result);
+  }
+  return result;
+}
+
 
 int main(){
   char tun_name[IFNAMSIZ];
@@ -116,6 +138,7 @@ int main(){
   char srcip[4];
   char destip[4];
   uint16_t nread, nwrite, plength;
+  unsigned short chksum;
   
   /* Connect to the device */
   strcpy(tun_name, "tun7");
@@ -152,6 +175,14 @@ int main(){
     buffer[17]=srcip[1];
     buffer[18]=srcip[2];
     buffer[19]=srcip[3];
+    buffer[20]=0;
+    buffer[22]+=0x8;
+    //buffer[23]=0x00;
+    //chksum=checksum(buffer,nread);
+
+    //buffer[22]=(char)((chksum>>8)&0xFF);
+    //buffer[23]=(char)chksum&0xFF;
+    printf("checksum: %x buf22: %x buf23: %x\n", chksum, buffer[22],buffer[23]);
     printf("src ip %2d:%2d:%2d:%2d", srcip[0],srcip[1],srcip[2],srcip[3]);
     //    destip={buffer[16],buffer[17],buffer[18],buffer[19]};
     //write(tun_fd,buffer,nread);
@@ -164,9 +195,9 @@ int main(){
     /* Do whatever with the data */
     printf("Read %d bytes fromthe device %s:\n", nread, tun_name);
     //printf("%x\n",*buffer);
-    for(int i=0; i<nread;i++){
+    /*for(int i=0; i<nread;i++){
       printf(" %2d ",buffer[i]);
-      }
+      }*/
     printf("\n");
     write(tun_fd,buffer,nread);
     //exit(0);
